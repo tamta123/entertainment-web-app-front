@@ -1,4 +1,10 @@
+import { MovieInfo } from "../../components/Mutual";
+
 const Movies = () => {
-  return <div>movie</div>;
+  return (
+    <div>
+      <MovieInfo />
+    </div>
+  );
 };
 export default Movies;

@@ -1,12 +1,14 @@
-import { configureStore } from "@reduxjs/toolkit";
-import personSlice from "./personSlice";
+// src/app/store.js
+import { configureStore } from '@reduxjs/toolkit';
+import moviesReducer from './movieSlice';
 
-const store = configureStore({
+export const store = configureStore({
   reducer: {
-    person: personSlice, 
-    // Add other reducers if needed
+    movies: moviesReducer,
   },
 });
+
+
 
 export type RootState = ReturnType<typeof store.getState>;
 
