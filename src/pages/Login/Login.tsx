@@ -13,6 +13,14 @@ const Login = () => {
         <Form>
           <div>
             <Input
+              type="name"
+              // value={value}
+              id="name"
+              placeholder="Name"
+            />
+          </div>
+          <div>
+            <Input
               type="email"
               // value={value}
               id="email"

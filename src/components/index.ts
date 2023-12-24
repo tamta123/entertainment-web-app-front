@@ -1,1 +1,1 @@
-export {default as LoginBoard} from "./Mutual"
+export { LoginBoard} from "./Mutual"

@@ -1,29 +1,51 @@
 import { useSelector } from "react-redux";
 import styled from "styled-components";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import Slider from "react-slick";
 
-const MovieInfo = ({
-  categoryId = null,
-  homeCategoryId = null,
-  searchQuery,
-}) => {
+const Trending = ({ homeCategoryId = null }) => {
   const movies = useSelector((state) => state.movies.data);
   const filteredMovies = movies.filter((movie) => {
-    const matchesCategory =
-      categoryId === null || movie.CategoryId === categoryId;
     const matchesHomeCategory =
-      homeCategoryId === null || movie.HomeCategoryId === homeCategoryId;
-    const matchesSearchQuery = movie.title
-      .toLowerCase()
-      .includes(searchQuery.trim().toLowerCase());
+      homeCategoryId === null || movie.HomeCategoryId === 2;
+    // const matchesSearchQuery = movie.title
+    //   .toLowerCase()
+    //   .includes(searchQuery.trim().toLowerCase());
 
-    return matchesCategory && matchesHomeCategory && matchesSearchQuery;
+    return matchesHomeCategory;
   });
 
+  const settings = {
+    focusOnSelect: true,
+    infinite: true,
+    arrows: false,
+    responsive: [
+      {
+        breakpoint: 1440,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          infinite: true,
+        },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1.5,
+          slidesToScroll: 1,
+          infinite: true,
+        },
+      },
+    ],
+    speed: 500, // Adjust the speed as needed
+  };
+
   return (
-    <>
+    <Slider {...settings} style={{ width: "100%" }}>
       {filteredMovies.map((movie) => (
         <Card key={movie.id}>
-          <Poster src={movie.posterSmall} alt={`poster for ${movie.title}`} />
+          <Poster src={movie.posterMedium} alt={`poster for ${movie.title}`} />
           <Ul>
             <ListItem>{movie.year}</ListItem>
             <ListItem>
@@ -44,19 +66,22 @@ const MovieInfo = ({
           <Title>{movie.title}</Title>
         </Card>
       ))}
-    </>
+    </Slider>
   );
 };
-export default MovieInfo;
 
 const Card = styled.div`
-  width: 164px;
-  height: 154px;
+  /* width: 240px;
+  height: 140px; */
+  position: relative;
+  padding: 0 10px; // Adjust the padding as needed
+  padding-left: 0;
+  margin-bottom: 24px;
 `;
 
 const Poster = styled.img`
-  width: 164px;
-  height: 110px;
+  width: 100%;
+  height: 140px;
   border-radius: 8px;
   background: lightgray 50% / cover no-repeat;
 `;
@@ -66,7 +91,11 @@ const Ul = styled.ul`
   width: 140px;
   justify-content: flex-start;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
+  align-items: center;
+  position: absolute;
+  top: 86px;
+  left: 16px;
 `;
 
 const ListItem = styled.li`
@@ -76,6 +105,7 @@ const ListItem = styled.li`
   font-weight: 300;
   line-height: normal;
   opacity: 0.75;
+  /* display: flex; */
   &:first-child {
     list-style: none; // Hide the bullet for the first ListItem
   }
@@ -92,4 +122,9 @@ const Title = styled.h3`
   font-style: normal;
   font-weight: 500;
   line-height: normal;
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
 `;
+
+export default Trending;
