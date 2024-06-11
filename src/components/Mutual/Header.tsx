@@ -1,8 +1,10 @@
 import styled from "styled-components";
 import { Bookmarks, Home, Logo, Movie, TvSeries } from "../../svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const navigate = useNavigate();
+
   return (
     <HeaderElement>
       <Link to="/">
@@ -22,6 +24,7 @@ const Header = () => {
           <Bookmarks />
         </Link>
       </Menu>
+      <LoginButton onClick={() => navigate("/login")}>Login</LoginButton>
       <User>
         <img src="image-avatar.png" alt="avatar" />
       </User>
@@ -45,6 +48,22 @@ const Menu = styled.div`
   display: flex;
   width: 40%;
   justify-content: space-between;
+`;
+
+const LoginButton = styled.button`
+  border-radius: 6px;
+  background: #fc4747;
+  width: 50px;
+  height: 30px;
+  color: #fff;
+  text-align: center;
+  font-feature-settings: "clig" off, "liga" off;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: normal;
+  border: none;
+  outline: none;
 `;
 
 const User = styled.div`

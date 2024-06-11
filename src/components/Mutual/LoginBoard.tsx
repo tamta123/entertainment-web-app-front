@@ -1,11 +1,13 @@
+import { useRef } from "react";
 import styled from "styled-components";
 
 type PropsType = {
   title: string;
-  children: any;
+  children: React.ReactNode; // Use React.ReactNode for children
   buttonText: string;
   question: string;
   answer: any;
+  onSubmit: any;
 };
 
 const LoginBoard: React.FC<PropsType> = ({
@@ -14,12 +16,23 @@ const LoginBoard: React.FC<PropsType> = ({
   buttonText,
   question,
   answer,
+  onSubmit,
 }) => {
+  const formRef = useRef<HTMLFormElement | null>(null);
+
+  const handleSubmit = () => {
+    // Check if the form reference is available
+    if (formRef.current) {
+      // Programmatically trigger the form submission
+      formRef.current.submit();
+    }
+  };
+
   return (
-    <Wrapper>
+    <Wrapper onClick={onSubmit}>
       <Title>{title}</Title>
       <div>{children}</div>
-      <Button>{buttonText}</Button>
+      <Button onClick={handleSubmit}>{buttonText}</Button>
       <QuestionWrap>
         <Question>{question}</Question>
         <Answer>{answer}</Answer>
@@ -36,7 +49,7 @@ const Wrapper = styled.div`
   background: #161d2f;
   width: 90%;
   height: auto;
-  margin: 0 auto;
+  /* margin: 0 auto; */
   display: flex;
   flex-direction: column;
 `;

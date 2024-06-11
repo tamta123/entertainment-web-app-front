@@ -1,12 +1,13 @@
 // src/app/store.js
 import { configureStore } from '@reduxjs/toolkit';
 import moviesReducer from './movieSlice';
-import formReducer from "./formSlice"
+import newUserReducer from './userSlice';
+
 
 export const store = configureStore({
   reducer: {
     movies: moviesReducer,
-    form:formReducer
+    newUser:newUserReducer
   },
 });
 
