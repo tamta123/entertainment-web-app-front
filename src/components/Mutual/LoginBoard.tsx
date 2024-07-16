@@ -1,4 +1,3 @@
-import { useRef } from "react";
 import styled from "styled-components";
 
 type PropsType = {
@@ -7,7 +6,7 @@ type PropsType = {
   buttonText: string;
   question: string;
   answer: any;
-  onSubmit: any;
+  onSubmit: () => void;
 };
 
 const LoginBoard: React.FC<PropsType> = ({
@@ -18,21 +17,11 @@ const LoginBoard: React.FC<PropsType> = ({
   answer,
   onSubmit,
 }) => {
-  const formRef = useRef<HTMLFormElement | null>(null);
-
-  const handleSubmit = () => {
-    // Check if the form reference is available
-    if (formRef.current) {
-      // Programmatically trigger the form submission
-      formRef.current.submit();
-    }
-  };
-
   return (
-    <Wrapper onClick={onSubmit}>
+    <Wrapper>
       <Title>{title}</Title>
       <div>{children}</div>
-      <Button onClick={handleSubmit}>{buttonText}</Button>
+      <Button onClick={onSubmit}>{buttonText}</Button>
       <QuestionWrap>
         <Question>{question}</Question>
         <Answer>{answer}</Answer>

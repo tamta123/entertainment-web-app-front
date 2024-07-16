@@ -1,9 +1,18 @@
 import styled from "styled-components";
 import { Bookmarks, Home, Logo, Movie, TvSeries } from "../../svg";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/features/redux";
+import { logout } from "../../store/features/userSlice";
 
 const Header = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn);
+
+  const handleLogOut = () => {
+    dispatch(logout());
+  };
 
   return (
     <HeaderElement>
@@ -24,10 +33,14 @@ const Header = () => {
           <Bookmarks />
         </Link>
       </Menu>
-      <LoginButton onClick={() => navigate("/login")}>Login</LoginButton>
-      <User>
-        <img src="image-avatar.png" alt="avatar" />
-      </User>
+      {!isLoggedIn && (
+        <LoginButton onClick={() => navigate("/login")}>Login</LoginButton>
+      )}
+      {isLoggedIn && (
+        <User>
+          <LoginButton onClick={handleLogOut}>Logout</LoginButton>
+        </User>
+      )}
     </HeaderElement>
   );
 };

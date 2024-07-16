@@ -11,10 +11,12 @@ const Home = () => {
 
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.movies);
+  //useSelector hook is used to get hold of any state that is maintained in redux store.This hook accepts the selector function as its parameter, it receives the redux state as its argument and returns the value
 
   useEffect(() => {
     dispatch(fetchMovies());
   }, [dispatch]);
+  //useDispatch hook is used to dispatch an action with react redux
 
   if (status === "loading") {
     return <div>Loading...</div>;
@@ -32,7 +34,7 @@ const Home = () => {
         <Trending />
         <Title>Recommended for you</Title>
         <CardWrapper>
-          <MovieInfo homeCategoryId={1} searchQuery={searchQuery} />
+          <MovieInfo homeCategoryId={2} searchQuery={searchQuery} />
         </CardWrapper>
       </MainWrapper>
     </div>

@@ -1,50 +1,22 @@
 import styled from "styled-components";
 import { LoginBoard } from "../../components";
 import { useDispatch, useSelector } from "react-redux";
-import { updateData } from "../../store/features/userSlice";
 import { useForm } from "react-hook-form";
-import axios from "axios";
-import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { InfoSchema } from "../../schemas";
-import { RootState } from "../../store/features/redux";
+import { AppDispatch, RootState } from "../../store/features/redux";
 import { useNavigate } from "react-router-dom";
+import { registerUser, resetSuccess } from "../../store/features/userSlice";
+import { useEffect, useRef } from "react";
 
 const SignUp = () => {
-  const [error, setError] = useState<string>("");
-  const dispatch = useDispatch();
-  const FormData = useSelector((state: RootState) => state.newUser);
+  const { loading, error, success } = useSelector(
+    (state: RootState) => state.user
+  );
+
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-
-  const sendPostRequest = async (FormData: any) => {
-    console.log("Sending POST request");
-    try {
-      const response = await axios.post(
-        "https://entertainment-web-app-back-production.up.railway.app/api/register",
-        FormData
-      );
-      console.log("POST request response:", response.data);
-      navigate("/");
-    } catch (error: any) {
-      if (error.response.status === 400 && error.response.data.message) {
-        setError(error.response.data.message);
-      } else {
-        console.error("Error sending POST request:", error);
-        setError("An error occurred while submitting your choice.");
-      }
-    }
-  };
-
-  const onSubmit = async (data: any) => {
-    console.log("Submitting form");
-    try {
-      await sendPostRequest(data);
-      console.log("Form submitted");
-    } catch (error) {
-      console.log(error);
-    }
-    console.log("Tamta");
-  };
+  const formRef = useRef<HTMLElement | null>(null);
 
   const {
     register,
@@ -52,21 +24,25 @@ const SignUp = () => {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(InfoSchema),
-    onSubmit: onSubmit,
   });
-
-  // const handleVerifyClick = async () => {
-  //   try {
-  //     const response = await axios.post(
-  //       "https://entertainment-web-app-back-production.up.railway.app/api/register",
-  //       { FormData }
-  //     );
-  //     console.log("Email sent successfully!", response.data);
-  //   } catch (error) {
-  //     console.error("Failed to send email:", error);
-  //   }
-  //   // TODO: Implement email verification logic
-  // };
+  const onSubmit = (data: {
+    firstName: string;
+    email: string;
+    password: string;
+    photo?: string;
+  }) => {
+    console.log(data);
+    dispatch(registerUser(data));
+  };
+  useEffect(() => {
+    if (success) {
+      alert(
+        "Registration successful! Please check your email to verify your account."
+      );
+      navigate("/login");
+      dispatch(resetSuccess());
+    }
+  }, [success, navigate, dispatch]);
 
   return (
     <Main>
@@ -75,24 +51,17 @@ const SignUp = () => {
         buttonText="Create an account"
         question="Already have an account?"
         answer="Login"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={() => {
+          formRef.current?.dispatchEvent(
+            new Event("submit", { bubbles: true, cancelable: true })
+          );
+        }}
       >
-        <Form onSubmit={handleSubmit(onSubmit)}>
+        <Form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
           <div>
             <Input
-              {...register("firstName", {
-                onChange: (e) => {
-                  console.log("onChange firstName:", e.target.value);
-                  dispatch(
-                    updateData({
-                      property: "firstName",
-                      value: e.target.value,
-                    })
-                  );
-                },
-              })}
+              {...register("firstName")}
               type="name"
-              value={FormData.firstName}
               id="firstName"
               placeholder="First Name"
               style={{
@@ -103,17 +72,8 @@ const SignUp = () => {
           </div>
           <div>
             <Input
-              {...register("email", {
-                onChange: (e) =>
-                  dispatch(
-                    updateData({
-                      property: "email",
-                      value: e.target.value,
-                    })
-                  ),
-              })}
+              {...register("email")}
               type="email"
-              value={FormData.email}
               id="email"
               placeholder="Email Address"
               style={{
@@ -124,17 +84,8 @@ const SignUp = () => {
           </div>
           <div>
             <Input
-              {...register("password", {
-                onChange: (e) =>
-                  dispatch(
-                    updateData({
-                      property: "password",
-                      value: e.target.value,
-                    })
-                  ),
-              })}
+              {...register("password")}
               type="password"
-              value={FormData.password}
               id="password"
               placeholder="password"
               style={{
@@ -143,17 +94,21 @@ const SignUp = () => {
             />
             <Error>{errors.password?.message}</Error>
           </div>
-          {/* <div>
+          <div>
             <Input
-              type="password"
-              value={formData.repeatPassword}
-              id="repeatPassword"
-              placeholder="Repeat Password"
-              onChange={handleChange} // Add onChange to update the state on input change
+              {...register("photo")}
+              type="text"
+              id="photo"
+              placeholder="photoURL"
+              style={{
+                borderColor: errors.password ? "#ee374a" : "#d6d9e6",
+              }}
             />
-          </div> */}
+            <Error>{errors.photo?.message}</Error>
+          </div>
         </Form>
-        {error && <ErrorMessage>{error}</ErrorMessage>}{" "}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        {loading && <LoadingMessage>Loading...</LoadingMessage>}
       </LoginBoard>
     </Main>
   );
@@ -204,6 +159,11 @@ const Error = styled.p`
 
 const ErrorMessage = styled.div`
   color: #ff0000;
+  font-size: 12px;
+  margin-bottom: 10px;
+`;
+const LoadingMessage = styled.div`
+  color: #007bff;
   font-size: 12px;
   margin-bottom: 10px;
 `;

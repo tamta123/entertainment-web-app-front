@@ -1,105 +1,125 @@
-// import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-// import axios from "axios";
+import {PayloadAction, createAsyncThunk, createSlice} from "@reduxjs/toolkit"
+import axios from "axios"
 
-// interface FormState {
-//   firstName: string;
-//     email: string;
-//     password: string;
-//     // repeatPassword: string;
-//   }
+const backendURl = "https://entertainment-web-app-back-production.up.railway.app/api"
 
-//   interface User {
-//     firstName: string,
-//     email: string,
-//     password: string
-//     photo:string
-//     // repeatPassword: string
-//   }
-
-
-//   interface FormSliceState {
-//     form: FormState;
-//   }
-  
-//   const initialState: FormSliceState = {
-//     form: {
-//       firstName: "",
-//       email: "",
-//       password: "",
-//       // repeatPassword: "",
-//     },
-//   };
-
-//  // Thunk to handle the asynchronous post request
-// export const submitForm = createAsyncThunk("form/submitForm", async (formData: FormState) => {
-//   try {
-//     const response = await axios.post("https://entertainment-web-app-back-production.up.railway.app/api/register", formData);
-//     return response.data as User; // Adjust this based on your actual response structure
-//   } catch (error) {
-//     // Handle error scenarios
-//     return Promise.reject(error);
-//   }
-// });
-
-
-// export const formSlice = createSlice({
-//   name: "form",
-//   initialState,
-//   reducers: {
-//     setFormData: (state, action: PayloadAction<Partial<FormState>>) => {
-//       return { ...state, form: { ...state.form, ...action.payload } }; // Adjusted to match the state structure
-//     },
-//     resetFormData: () => initialState,
-//   },
-//   extraReducers: (builder) => {
-//     builder.addCase(submitForm.fulfilled, (state, action) => {
-//       // Handle success scenario, if needed
-//     });
-//     builder.addCase(submitForm.rejected, (state, action) => {
-//       // Handle error scenario, if needed
-//     });
-//   },
-// });
-
-
-// export const { setFormData, resetFormData } = formSlice.actions;
-
-// export const selectFormData = (state: { form: FormSliceState }) => state.form.form;
-
-
-// export default formSlice.reducer;
-
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-
-interface UserState {
-  firstName: string,
-      email: string,
-      password: string
-      photo?:any
-  [key:string]:any;
+interface UserInfo {
+  id:number;
+  firstName:string;
+  email:string;
+  token:string
 }
 
-export type KeyofUserState = keyof UserState;
+interface UserState {
+  loading:boolean;
+  userInfo:UserInfo|null;
+  userToken:string|null;
+  error:string|null;
+  success:boolean
+  isLoggedIn:boolean
 
-const initialUserState: UserState = {
-  firstName: "",
-  email:"",
-  password: "",
-  photo: ""
-};
+}
 
-const NewUserSlice = createSlice({
-  name: "User",
-  initialState: initialUserState,
-  reducers: {
+export const registerUser = createAsyncThunk<
+UserInfo,
+{firstName:string,email:string,password:string,photo?:string},
+{ rejectValue: string }
+>('user/register', async({firstName,email,password,photo},{rejectWithValue})=>{
+  try {
+    const config ={
+      headers:{
+        "Content-Type": "application/json"
+      },
+    };
+      const response = await axios.post(`${backendURl}/register`,{firstName,email,password,photo},config);
+      return response.data
+    }
+   catch (error:any) {
+    if(error.response && error.response.data.message){
+      return rejectWithValue(error.response.data.message)
+    }else{
+      return rejectWithValue(error.message)
+    }
+  }
+})
 
-  updateData: (state, action:PayloadAction<{property:string, value:any}>) => {
-      const { property, value } = action.payload;
-        state[property] = value;
-    },
+export const userLogin = createAsyncThunk
+<UserInfo,
+{email:string,password:string},
+{ rejectValue: string }
+>('user/login', async({email,password},{rejectWithValue})=>{
+  try {
+    const config ={
+    headers:{
+      "Content-Type":"application/json"
+    }, 
+  } 
+  const response = await axios.post(`${backendURl}/login`,{email,password},config)
+  // localStorage.setItem('userToken', response.data.userToken)
+  return response.data;
+  }catch (error:any) {
+    if(error.response&&error.response.data.message){
+      return rejectWithValue(error.response.data.message)
+    }else{
+      return rejectWithValue(error.message)
+    }
+  }
+})
 
+const initialState :UserState = {
+  loading:false,
+  userInfo:null,
+  userToken:null,
+  error:null,
+  success:false, // for monitoring the registration process
+  isLoggedIn:false
+}
+
+const userSlice =createSlice({
+  name:"user",
+  initialState,
+  reducers:{
+    resetSuccess:(state)=>{state.success=false},
+    logout:(state)=>{
+      state.userInfo=null;
+      state.userToken=null;
+      state.isLoggedIn=false;
+    }
   },
-});
+  extraReducers:(builder)=>{
+    builder
+    .addCase(registerUser.pending, (state)=>{
+      state.loading=true;
+      state.error=null;
+    })
+    .addCase(registerUser.fulfilled, (state,action:PayloadAction<UserInfo>)=>{
+      state.loading=false;
+      state.success=true;
+      // state.userInfo=action.payload;
+      state.userToken=action.payload.token
+    })
+    .addCase(registerUser.rejected, (state,action:PayloadAction<string|undefined>)=>{
+      state.loading=false;
+      state.error = action.payload ?? "Something went wrong";
+    })
+    .addCase(userLogin.pending,(state)=>{
+      state.loading=true;
+      state.error=null;
+    })
+    .addCase(userLogin.fulfilled,(state,action:PayloadAction<UserInfo>)=>{
+      state.loading=false;
+      state.userInfo=action.payload;
+      state.userToken = action.payload.token; // Set userToken from the payload
+      state.isLoggedIn = true; // set isLoggedIn to true on successful login
+      console.log("Login fulfilled:", action.payload); // Log the payload
+    })
+    .addCase(userLogin.rejected, (state,action:PayloadAction<string|undefined>)=>{
+      state.loading = false;
+      state.error = action.payload ?? "Something went wrong";
+    })
+  },
+})
 
-export const { updateData } = NewUserSlice.actions;
-export default NewUserSlice.reducer;
+export const {resetSuccess,logout} = userSlice.actions
+
+export default userSlice.reducer
